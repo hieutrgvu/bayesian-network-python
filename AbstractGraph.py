@@ -130,3 +130,90 @@ class AbstractGraph(IGraph, ItemNotFoundException):
             return 0
 
         return edge.weight
+
+    def getOutwardEdges(self, from_t):
+        node = self.getVertexNode(from_t)
+        if node is None:
+            return
+
+        return node.getOutwardEdges()
+
+    def getInwardEdges(self, to_t):
+        list = []
+        nodeId = self.nodeList
+        for node in nodeId:
+            edgeId = node.adList
+            for edge in edgeId:
+                if edge == to_t:
+                    list.append(edge.from_vertex.vertex)
+
+        return list
+
+    def getNodeList(self):
+        return self.nodeList
+
+    def size(self):
+        return len(self.nodeList)
+
+    def inDegree(self, vertex):
+        node = self.getVertexNode(vertex)
+        if node is None:
+            return
+
+        return node.inDegree()
+
+    def outDegree(self, vertex):
+        node = self.getVertexNode(vertex)
+        if node is None:
+            return
+
+        return node.outDegree()
+
+    def toString(self):
+        desc = "========================="
+        desc += "Vertices:\n";
+        nodeIt = self.nodeList
+        for node in nodeIt:
+            desc += "  " + node.toString() + "\n";
+
+        desc += "========================="
+        desc += "Edges:\n";
+        for node in nodeIt:
+            edgIt = node.adList
+            for edge in edgIt:
+                line = "E(%s,%s, %s)", node.vertex, edge.to.vertex, edge.weight
+                desc += "  " + line + "\n"
+
+        desc += "========================="
+        return desc
+
+    def println(self):
+        self.toString()
+
+
+class GraphIterator:
+    graph: IGraph
+    nodeIt: list
+    node: VertexNode
+    afterMove: bool = False
+
+    def __init__(self, graph: IGraph, nodeIt):
+        self.graph = graph
+        self.nodeIt = nodeIt
+        self.node = None
+
+    def hasNext(self):
+        if next(self.nodeIt, None) is None:
+            return False
+
+        return True
+
+    def next(self):
+        node = next(self.nodeIt, None)
+        self.afterMove = True
+        return node.vertex
+
+    def remove(self):
+        if self.afterMove:
+            self.graph.remove(self.node.vertex)
+            self.afterMove = False
