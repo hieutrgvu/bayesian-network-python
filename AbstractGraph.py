@@ -13,14 +13,14 @@ class Edge:
         return from_eq and to_eq
 
     def __str__(self):
-        return "E(from:{}, to: {}): ".format(str(self.from_node, self.to_node))
+        return "E(from:{}, to: {}): ".format(str(self.from_node), str(self.to_node))
 
 
 class VertexNode:
     def __init__(self, data):
         self.vertex = data
         self.in_degree = self.out_degree = 0
-        self.edge_list = [Edge(a, b, 3.4)]
+        self.edge_list = []
 
     def __str__(self):
         return str(self.vertex)
