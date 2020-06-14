@@ -19,11 +19,9 @@ class Edge:
 class VertexNode:
     def __init__(self, data):
         self.vertex = data
-        self.in_degree = self.out_degree = 0
+        self.in_degree = 0
+        self.out_degree = 0
         self.edge_list = []
-
-    def __str__(self):
-        return str(self.vertex)
 
     def connect(self, to_node, weight=0.0):
         edge = self.get_edge(to_node)
@@ -33,7 +31,7 @@ class VertexNode:
             edge.from_node.out_degree += 1
             edge.to_node.in_degree += 1
         else:
-            edge = weight = weight
+            edge.weight = weight
 
     def get_edge(self, to_node):
         for edge in self.edge_list:
@@ -43,11 +41,7 @@ class VertexNode:
         return None
 
     def get_outward_edges(self):
-        list_to_node_vertex = []
-        for edge in self.edge_list:
-            list_to_node_vertex.append(edge.to_node.vertex)
-
-        return list_to_node_vertex
+        return [edge.to_node.vertex for edge in self.edge_list]
 
     def remove_to(self, to_node):
         for edge in self.edge_list:
@@ -57,7 +51,7 @@ class VertexNode:
                 edge.to_node.in_degree -= 1
                 break
 
-    def to_string(self):
+    def __str__(self):
         msg = "V({}, in:{}, out:{})".format(str(self.vertex), self.in_degree, self.out_degree)
         return msg
 
@@ -114,13 +108,13 @@ class AbstractGraph(IGraph):
         return node.get_outward_edges()
 
     def get_inward_edges(self, to_vertex):
-        list_node_vertex = []
+        vertex_list = []
         for node in self.node_list:
             for edge in node.edge_list:
                 if edge.to_node.vertex == to_vertex:
-                    list_node_vertex.append(edge.from_node.vertex)
+                    vertex_list.append(edge.from_node.vertex)
 
-        return list_node_vertex
+        return vertex_list
 
     def size(self):
         return len(self.node_list)
@@ -139,18 +133,18 @@ class AbstractGraph(IGraph):
 
         return node.out_degree
 
-    def println(self):
+    def __str__(self):
         desc = "===========================================\n"
         desc += "Vertices:\n"
         for node in self.node_list:
-            desc += "  " + node.to_string() + "\n"
+            desc += "  " + str(node) + "\n"
 
         desc += "-------------------------------------------\n"
-        desc += "Edges:\n";
+        desc += "Edges:\n"
         for node in self.node_list:
             for edge in node.edge_list:
                 line = "E({}, {}, {})".format(str(node.vertex), edge.to_node.vertex, edge.weight)
-                desc += "  " + line + "\n";
+                desc += "  " + line + "\n"
 
         desc += "==========================================="
 

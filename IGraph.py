@@ -1,19 +1,19 @@
 class ItemNotFoundException(BaseException):
-    def __init__(self, itemInfo):
-        self.itemInfo = itemInfo
+    def __init__(self, item_info):
+        self.itemInfo = item_info
 
     def __str__(self):
         return 'The following vertex is not found: ' + str(self.itemInfo)
 
 
 class VertexNotFoundException(ItemNotFoundException):
-    def __init__(self, itemInfo):
-        super(VertexNotFoundException, self).__init__(itemInfo)
+    def __init__(self, item_info):
+        super(VertexNotFoundException, self).__init__(item_info)
 
 
 class EdgeNotFoundException(ItemNotFoundException):
-    def __init__(self, itemInfo):
-        super(EdgeNotFoundException, self).__init__(itemInfo)
+    def __init__(self, item_info):
+        super(EdgeNotFoundException, self).__init__(item_info)
 
 
 class IGraph:
@@ -35,10 +35,10 @@ class IGraph:
     def weight(self, from_vertex, to_vertex):
         pass
 
-    def getOutwardEdges(self, from_vertex):
+    def get_outward_edges(self, from_vertex):
         pass
 
-    def getInwardEdges(self, to_vertex):
+    def get_inward_edges(self, to_vertex):
         pass
 
     def iterator(self):
@@ -47,8 +47,8 @@ class IGraph:
     def size(self):
         pass
 
-    def inDegree(self, vertex):
+    def in_degree(self, vertex):
         pass
 
-    def outDegree(self, vertex):
+    def out_degree(self, vertex):
         pass
