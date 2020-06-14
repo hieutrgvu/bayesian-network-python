@@ -12,22 +12,28 @@ class Edge:
         to_eq = (self.to_node.vertex == edge.to_node.vertex)
         return from_eq and to_eq
 
+    def __str__(self):
+        return "E(from:{}, to: {}): ".format(str(self.from_node, self.to_node))
 
-class TestObj:
-    pass
-
-a = TestObj()
-a.vertex = 3
-b = TestObj()
-b.vertex = 4
 
 class VertexNode:
     def __init__(self, data):
         self.vertex = data
-        self.edge_list = [Edge(a, b, 3.5)]
+        self.in_degree = self.out_degree = 0
+        self.edge_list = [Edge(a, b, 3.4)]
 
     def __str__(self):
         return str(self.vertex)
+
+    def connect(self, to_node, weight=0.0):
+        edge = self.get_edge(to_node)
+        if edge is None:
+            edge = Edge(self, to_node, weight)
+            self.edge_list.append(edge)
+            edge.from_node.out_degree += 1
+            edge.to_node.in_degree += 1
+        else:
+            edge = weight = weight
 
     def get_edge(self, to_node):
         for edge in self.edge_list:
@@ -35,6 +41,25 @@ class VertexNode:
                 return edge
 
         return None
+
+    def get_outward_edges(self):
+        list_to_node_vertex = []
+        for edge in self.edge_list:
+            list_to_node_vertex.append(edge.to_node.vertex)
+
+        return list_to_node_vertex
+
+    def remove_to(self, to_node):
+        for edge in self.edge_list:
+            if edge.to_node.vertex == to_node.vertex:
+                self.edge_list.remove(edge)
+                edge.from_node.out_degree -= 1
+                edge.to_node.in_degree -= 1
+                break
+
+    def to_string(self):
+        msg = "V({}, in:{}, out:{})".format(str(self.vertex), self.in_degree, self.out_degree)
+        return msg
 
 
 class AbstractGraph(IGraph):
@@ -81,8 +106,52 @@ class AbstractGraph(IGraph):
 
         return edge.weight
 
+    def get_outward_edges(self, from_vertex):
+        node = self.get_vertex_node(from_vertex)
+        if node is None:
+            raise VertexNotFoundException(from_vertex)
 
-testgraph = AbstractGraph()
-testgraph.add(3)
-testgraph.add(4)
-print(testgraph.weight(3, 4))
+        return node.get_outward_edges()
+
+    def get_inward_edges(self, to_vertex):
+        list_node_vertex = []
+        for node in self.node_list:
+            for edge in node.edge_list:
+                if edge.to_node.vertex == to_vertex:
+                    list_node_vertex.append(edge.from_node.vertex)
+
+        return list_node_vertex
+
+    def size(self):
+        return len(self.node_list)
+
+    def in_degree(self, vertex):
+        node = self.get_vertex_node(vertex)
+        if node is None:
+            raise VertexNotFoundException(vertex)
+
+        return node.in_degree
+
+    def out_degree(self, vertex):
+        node = self.get_vertex_node(vertex)
+        if node is None:
+            raise VertexNotFoundException(vertex)
+
+        return node.out_degree
+
+    def println(self):
+        desc = "===========================================\n"
+        desc += "Vertices:\n"
+        for node in self.node_list:
+            desc += "  " + node.to_string() + "\n"
+
+        desc += "-------------------------------------------\n"
+        desc += "Edges:\n";
+        for node in self.node_list:
+            for edge in node.edge_list:
+                line = "E({}, {}, {})".format(str(node.vertex), edge.to_node.vertex, edge.weight)
+                desc += "  " + line + "\n";
+
+        desc += "==========================================="
+
+        return desc
