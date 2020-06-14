@@ -1,4 +1,4 @@
-from IGraph import *
+from ifgraph import *
 
 
 class Edge:
