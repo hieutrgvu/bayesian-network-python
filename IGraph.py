@@ -1,22 +1,19 @@
-class ItemNotFoundException:
-    __itemInfo = None
-
+class ItemNotFoundException(BaseException):
     def __init__(self, itemInfo):
-        self.__itemInfo = itemInfo
+        self.itemInfo = itemInfo
 
-    def toString(self):
-        message = "The following vertex is not found: %s", self.__itemInfo
-        return message
+    def __str__(self):
+        return 'The following vertex is not found: ' + str(self.itemInfo)
 
 
 class VertexNotFoundException(ItemNotFoundException):
-    def VertexNotFoundException(self, vertexInfo):
-        super().__init__(self, vertexInfo)
+    def __init__(self, itemInfo):
+        super().__init__(itemInfo)
 
 
 class EdgeNotFoundException(ItemNotFoundException):
-    def EdgeNotFoundException(self, vertexInfo):
-        super().__init__(self, vertexInfo)
+    def __init__(self, itemInfo):
+        super().__init__(itemInfo)
 
 
 class IGraph:
