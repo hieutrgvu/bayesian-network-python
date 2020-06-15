@@ -8,15 +8,15 @@ class ItemNotFoundException(BaseException):
 
 class VertexNotFoundException(ItemNotFoundException):
     def __init__(self, item_info):
-        super(VertexNotFoundException, self).__init__(item_info)
+        super().__init__(item_info)
 
 
 class EdgeNotFoundException(ItemNotFoundException):
     def __init__(self, item_info):
-        super(EdgeNotFoundException, self).__init__(item_info)
+        super().__init__(item_info)
 
 
-class IGraph:
+class IfGraph:
     def add(self, vertex):
         pass
 

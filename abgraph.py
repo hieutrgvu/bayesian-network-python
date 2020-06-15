@@ -56,7 +56,7 @@ class VertexNode:
         return msg
 
 
-class AbstractGraph(IGraph):
+class AbstractGraph(IfGraph):
     def __init__(self):
         self.node_list = []
 
@@ -149,3 +149,13 @@ class AbstractGraph(IGraph):
         desc += "==========================================="
 
         return desc
+
+    def __iter__(self):
+        self.iter_graph = self.node_list.copy()
+        return self
+
+    def __next__(self):
+        if len(self.iter_graph) > 0:
+            return self.iter_graph.pop(0).vertex
+        else:
+            raise StopIteration
