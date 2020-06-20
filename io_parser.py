@@ -12,7 +12,7 @@ class ErrorFormatFile(ErrorException):
 
 
 def read_file_model_input(name_file):
-    f = open("name_file", "r")
+    f = open(name_file, "r")
     return f
 
 
