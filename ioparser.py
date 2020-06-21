@@ -95,9 +95,3 @@ def connect_bayes_node(bayes_graph):
 
     return bayes_graph
 
-# val_lst -> val_dict
-# iograph: create graph
-# move bayes.py to bayesgraph.py
-# bayesgraph inherit digraph
-# move test case to main.py
-# push demo.txt on git
