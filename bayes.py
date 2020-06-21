@@ -16,3 +16,6 @@ class BayesNode(VertexNode):
 
     def get_table(self):
         return self.table
+
+    def get_val_idx(self, val):
+        return 0
