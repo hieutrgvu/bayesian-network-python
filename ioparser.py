@@ -1,4 +1,4 @@
-from bayesgraph import *
+from bayesnet import *
 import numpy as np
 
 
@@ -20,7 +20,7 @@ class IOGraph:
         self.name_file = name_file
 
     def create_graph(self):
-        bayes_graph = BayesGraph()
+        bayes_graph = BayesNet()
         count = 0
 
         with open(self.name_file, "r") as f:
