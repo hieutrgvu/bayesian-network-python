@@ -27,15 +27,21 @@ class BayesNet(DiGraph):
     def add(self, vertex, parent_lst, val_dict, val_table):
         self.node_list.append(BayesNode(vertex, parent_lst, val_dict, val_table))
 
-    def infer(self):
+    def check(self, var_dict):
         pass
+
+    def infer(self, var_infer_dict, var_proof_dict):
+        # G = A; I = Cao, D = Kho
+        # var_infer_dict = {"G": "A"}
+        # var_proof_dict = {"I": "Cao", "D": "Kho"}
+        self.check()
 
     def sample(self, sample_num):
         np.random.seed(0)
 
         sorter = TopoSorter(self)
         topo_lst = sorter.sort()
-        self.topo_dict = {vertex : vertex_idx for vertex_idx, vertex in enumerate(topo_lst)}
+        self.topo_dict = {vertex: vertex_idx for vertex_idx, vertex in enumerate(topo_lst)}
 
         for i in range(sample_num):
             sample_val = []
