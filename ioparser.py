@@ -16,44 +16,64 @@ class ErrorFormatFile(ErrorException):
 
 
 class IOGraph:
-    def __init__(self, name_file):
-        self.name_file = name_file
+    def __init__(self, model_file):
+        self.model_file = model_file
 
     def create_graph(self):
-        bayes_graph = BayesNet()
-        count = 0
+        graph = parse_file_model(self.model_file)
+        return graph
 
-        with open(self.name_file, "r") as f:
-            data_file = f.readlines()
-        for data_line in data_file:
-            data_split = data_line.split(";")
-            count += 1
-            parent_lst = []
-            val_dict = {}
-            val_table = []
-            # skip the first line
-            if count == 1:
-                continue
 
-            # node_bayes not existed
-            if len(data_split[0]) == 0:
-                raise ErrorFormatFile("node name not exist in file")
+class Infer:
+    def __init__(self, infer_dict, proof_dict):
+        self.infer_dict = infer_dict
+        self.proof_dict = proof_dict
 
-            vertex = data_split[0]
 
-            if len(data_split[1]) > 0:
-                parent_lst = data_split[1].split(",")
+class IOInfer:
+    def __init__(self, test_file):
+        self.test_file = test_file
+        self.infer_list = []
 
-            if len(data_split[2]) > 0:
-                val_dict = value_dict_parser(data_split[2])
+    def create_infer(self):
+        self.infer_list = parse_file_test(self.test_file)
 
-            if len(data_split[3]) > 0 and len(data_split[4]) > 0:
-                table = val_table_parser(data_split[3], data_split[4])
-                val_table = table
 
-            bayes_graph.add(vertex, parent_lst, val_dict, val_table)
+def parse_file_model(model_file):
+    bayes_graph = BayesNet()
+    count = 0
 
-        return connect_bayes_node(bayes_graph)
+    with open(model_file, "r") as f:
+        data_file = f.readlines()
+    for data_line in data_file:
+        data_split = data_line.split(";")
+        count += 1
+        parent_lst = []
+        val_dict = {}
+        val_table = []
+        # skip the first line
+        if count == 1:
+            continue
+
+        # node_bayes not existed
+        if len(data_split[0]) == 0:
+            raise ErrorFormatFile("node name not exist in file")
+
+        vertex = data_split[0]
+
+        if len(data_split[1]) > 0:
+            parent_lst = data_split[1].split(",")
+
+        if len(data_split[2]) > 0:
+            val_dict = value_dict_parser(data_split[2])
+
+        if len(data_split[3]) > 0 and len(data_split[4]) > 0:
+            table = val_table_parser(data_split[3], data_split[4])
+            val_table = table
+
+        bayes_graph.add(vertex, parent_lst, val_dict, val_table)
+
+    return connect_bayes_node(bayes_graph)
 
 
 def value_dict_parser(value_original):
@@ -95,3 +115,44 @@ def connect_bayes_node(bayes_graph):
 
     return bayes_graph
 
+
+def parse_file_test(test_file):
+    count = 0
+    io_infer_list = []
+
+    with open(test_file, "r") as f:
+        data_file = f.readlines()
+    for data_line in data_file:
+        data_split = data_line.split(";")
+        count += 1
+        # skip the first line
+        if count == 1:
+            continue
+
+        # check len question
+        if len(data_split) == 0:
+            raise ErrorFormatFile("test file not enough argument")
+
+        if len(data_split[0]) > 0:
+            infer_dict = infer_dict_parser(data_split[0])
+
+        if len(data_split[1]) > 0:
+            proof_dict = infer_dict_parser(data_split[1])
+
+        infer_object = Infer(infer_dict, proof_dict)
+        io_infer_list.append(infer_object)
+
+    return io_infer_list
+
+
+def infer_dict_parser(infer_original):
+    infer_list = infer_original.split(",")
+    infer_dict = {}
+    for infer_element in infer_list:
+        infer = infer_element.split("=")
+        if len(infer) == 2:
+            infer_dict[infer[0]] = infer[1].rstrip()
+        else:
+            raise ErrorFormatFile("test file error format")
+
+    return infer_dict

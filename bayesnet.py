@@ -27,13 +27,12 @@ class BayesNet(DiGraph):
     def add(self, vertex, parent_lst, val_dict, val_table):
         self.node_list.append(BayesNode(vertex, parent_lst, val_dict, val_table))
 
-    def check(self, var_dict):
+    def check(self):
         pass
 
     def infer(self, var_infer_dict, var_proof_dict):
-        # G = A; I = Cao, D = Kho
-        # var_infer_dict = {"G": "A"}
-        # var_proof_dict = {"I": "Cao", "D": "Kho"}
+        self.var_infer_dict = var_infer_dict
+        self.var_proof_dict = var_proof_dict
         self.check()
 
     def sample(self, sample_num):
