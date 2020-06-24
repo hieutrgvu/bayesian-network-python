@@ -44,13 +44,17 @@ def main():
     input_model = ['model.txt', 'test.txt']
     if len(input_model) == 2:
         graph_in = parse_graph(input_model[0])
-        for i in graph_in.node_list:
+        for i in graph_in.node_dict.values():
             print(i.vertex, " parent_list = ", i.parent_lst, " value_list = ", i.val_dict, " table = ", i.distribution)
 
         infer_in = parse_infer(input_model[1])
+        output_file = open('output.txt', 'w')
         for i in infer_in.infer_list:
             print("infer_dict = ", i.infer_dict, " proof_dict = ", i.proof_dict)
-            print(graph_in.infer_forward(i.infer_dict, i.proof_dict))
+            output_value = graph_in.infer_forward(i.infer_dict, i.proof_dict)
+            output_file.write(str(output_value) + "\n")
+
+        output_file.close()
 
     start_time = time.time()
     # print(graph_in.infer_forward({'I': 'Thap'}, {'D': 'De', 'G': 'B', 'L': 'Yeu', 'S': 'Thap'}))

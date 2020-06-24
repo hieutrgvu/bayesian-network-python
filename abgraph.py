@@ -58,17 +58,13 @@ class VertexNode:
 
 class AbstractGraph(IfGraph):
     def __init__(self):
-        self.node_list = []
+        self.node_dict = {}
 
     def get_vertex_node(self, vertex):
-        for node in self.node_list:
-            if node.vertex == vertex:
-                return node
-
-        return None
+        return self.node_dict.get(vertex)
 
     def add(self, vertex):
-        self.node_list.append(VertexNode(vertex))
+        self.node_dict[vertex] = VertexNode(vertex)
 
     def remove(self, vertex):
         pass
@@ -109,7 +105,7 @@ class AbstractGraph(IfGraph):
 
     def get_inward_edges(self, to_vertex):
         vertex_list = []
-        for node in self.node_list:
+        for node in self.node_dict.values():
             for edge in node.edge_list:
                 if edge.to_node.vertex == to_vertex:
                     vertex_list.append(edge.from_node.vertex)
@@ -117,7 +113,7 @@ class AbstractGraph(IfGraph):
         return vertex_list
 
     def size(self):
-        return len(self.node_list)
+        return len(self.node_dict)
 
     def in_degree(self, vertex):
         node = self.get_vertex_node(vertex)
@@ -136,12 +132,12 @@ class AbstractGraph(IfGraph):
     def __str__(self):
         desc = "===========================================\n"
         desc += "Vertices:\n"
-        for node in self.node_list:
+        for node in self.node_dict.values():
             desc += "  " + str(node) + "\n"
 
         desc += "-------------------------------------------\n"
         desc += "Edges:\n"
-        for node in self.node_list:
+        for node in self.node_dict.values():
             for edge in node.edge_list:
                 line = "E({}, {}, {})".format(str(node.vertex), edge.to_node.vertex, edge.weight)
                 desc += "  " + line + "\n"
@@ -151,7 +147,11 @@ class AbstractGraph(IfGraph):
         return desc
 
     def __iter__(self):
-        self.iter_graph = self.node_list.copy()
+        iter_graph = []
+        for value in self.node_dict.values():
+            iter_graph.append(value)
+
+        self.iter_graph = iter_graph
         return self
 
     def __next__(self):

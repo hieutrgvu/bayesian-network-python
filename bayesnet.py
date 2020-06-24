@@ -25,12 +25,18 @@ class BayesNet(DiGraph):
         self.topo_dict = {}  # Updated in sample()
 
     def add(self, vertex, parent_lst, val_dict, val_table):
-        self.node_list.append(BayesNode(vertex, parent_lst, val_dict, val_table))
+        self.node_dict[vertex] = BayesNode(vertex, parent_lst, val_dict, val_table)
 
     def check(self, var_dict):
-        pass
+        for key, value in var_dict.items():
+            if key not in self.node_dict:
+                raise BayesNetException("node test not existed in graph")
 
-    def infer_forward(self, var_infer_dict, var_proof_dict, sample_num=10**6):
+            node = self.node_dict.get(key)
+            if value not in node.val_dict:
+                raise BayesNetException("value not existed in graph")
+
+    def infer_forward(self, var_infer_dict, var_proof_dict, sample_num=10 ** 6):
         # G = A; I = Cao, D = Kho
         # var_infer_dict = {"G": "A"}
         # var_proof_dict = {"I": "Cao", "D": "Kho"}
@@ -60,7 +66,7 @@ class BayesNet(DiGraph):
             infer = np.where((self.sample_arr[:, infer_mask] == infer_compare).all(axis=1))
             return infer[0].shape[0] / self.sample_arr.shape[0]
 
-    def infer_likelihood(self, var_infer_dict, var_proof_dict, sample_num=10**6):
+    def infer_likelihood(self, var_infer_dict, var_proof_dict, sample_num=10 ** 6):
         if not var_proof_dict:
             print("Inference with likelihood requires proof! Using forward sampling instead...")
             return self.infer_forward(var_infer_dict, var_proof_dict)
@@ -109,7 +115,6 @@ class BayesNet(DiGraph):
 
         np.random.seed(0)
         sample_lst = []
-
         sorter = TopoSorter(self)
         topo_lst = sorter.sort()
         self.topo_dict = {vertex: vertex_idx for vertex_idx, vertex in enumerate(topo_lst)}

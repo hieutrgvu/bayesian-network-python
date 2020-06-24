@@ -106,7 +106,7 @@ def val_table_parser(shape_table_original, table_original):
 
 
 def connect_bayes_node(bayes_graph):
-    for bayes_node in bayes_graph.node_list:
+    for bayes_node in bayes_graph.node_dict.values():
         if len(bayes_node.parent_lst) > 0:
             for vertex in bayes_node.parent_lst:
                 node = bayes_graph.get_vertex_node(vertex)
