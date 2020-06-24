@@ -88,21 +88,23 @@ class BayesNet(DiGraph):
             node = self.get_vertex_node(vertex)
             infer_compare.append(node.val_dict[val])
 
-        proof = np.where((self.sample_arr[:, proof_mask] == proof_compare).all(axis=1))
-        infer = np.where((self.sample_arr[proof[0][:, None], infer_mask] == infer_compare).all(axis=1))
+        proof_loc = np.where((self.sample_arr[:, proof_mask] == proof_compare).all(axis=1))
+        proof_arr = self.sample_arr[proof_loc[0], :]
+        infer_loc = np.where((proof_arr[:, infer_mask] == infer_compare).all(axis=1))
 
-        likelihood_val = np.ones(proof[0].shape[0])
+        likelihood_val = np.ones(proof_loc[0].shape[0])
 
         for node in proof_node:
             var_lookup = [self.topo_dict[v] for v in node.parent_lst]
             var_lookup.append(self.topo_dict[node.vertex])
-            distribution_idx = self.sample_arr[proof[0][:, None], var_lookup]
+            var_samples = proof_arr[:, var_lookup]
+            var_unique = np.unique(var_samples, axis=0)
 
-            # Can this loop be vectorized?
-            for i in range(likelihood_val.shape[0]):
-                likelihood_val[i] *= node.distribution[tuple(distribution_idx[i])]
+            for sample in var_unique:
+                loc = np.where((var_samples == sample).all(axis=1))
+                likelihood_val[loc[0]] *= node.distribution[tuple(sample)]
 
-        return np.sum(likelihood_val[infer[0]]) / np.sum(likelihood_val)
+        return np.sum(likelihood_val[infer_loc[0]]) / np.sum(likelihood_val)
 
     def sample(self, sample_num):
         np.random.seed(0)
