@@ -50,7 +50,7 @@ def main():
         infer_in = parse_infer(input_model[1])
         for i in infer_in.infer_list:
             print("infer_dict = ", i.infer_dict, " proof_dict = ", i.proof_dict)
-            graph_in.infer(i.infer_dict, i.proof_dict)
+            print(graph_in.infer_forward(i.infer_dict, i.proof_dict))
 
     start_time = time.time()
     # print(graph_in.infer_forward({'I': 'Thap'}, {'D': 'De', 'G': 'B', 'L': 'Yeu', 'S': 'Thap'}))

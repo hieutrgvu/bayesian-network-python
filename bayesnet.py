@@ -27,9 +27,6 @@ class BayesNet(DiGraph):
     def add(self, vertex, parent_lst, val_dict, val_table):
         self.node_list.append(BayesNode(vertex, parent_lst, val_dict, val_table))
 
-    def infer(self, var_infer_dict, var_proof_dict):
-        pass
-
     def check(self, var_dict):
         pass
 
@@ -107,6 +104,9 @@ class BayesNet(DiGraph):
         return np.sum(likelihood_val[infer_loc[0]]) / np.sum(likelihood_val)
 
     def sample(self, sample_num):
+        if self.sample_arr.shape[0] == sample_num:
+            return
+
         np.random.seed(0)
         sample_lst = []
 
