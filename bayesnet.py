@@ -21,7 +21,7 @@ class BayesNode(VertexNode):
 class BayesNet(DiGraph):
     def __init__(self):
         super().__init__()
-        self.sample_arr = np.array([0])  # will be convert to numpy array later
+        self.sample_arr = np.array([0])
         self.topo_dict = {}  # Updated in sample()
 
     def add(self, vertex, parent_lst, val_dict, val_table):
@@ -38,6 +38,7 @@ class BayesNet(DiGraph):
         # var_infer_dict = {"G": "A"}
         # var_proof_dict = {"I": "Cao", "D": "Kho"}
         self.check(var_infer_dict)
+        self.check(var_proof_dict)
         self.sample(sample_num)
 
         proof_mask = []
@@ -61,6 +62,47 @@ class BayesNet(DiGraph):
         else:
             infer = np.where((self.sample_arr[:, infer_mask] == infer_compare).all(axis=1))
             return infer[0].shape[0] / self.sample_arr.shape[0]
+
+    def infer_likelihood(self, var_infer_dict, var_proof_dict, sample_num=10**6):
+        if not var_proof_dict:
+            print("Inference with likelihood requires proof! Using forward sampling instead...")
+            return self.infer_forward(var_infer_dict, var_proof_dict)
+
+        self.check(var_infer_dict)
+        self.check(var_proof_dict)
+        self.sample(sample_num)
+
+        proof_mask = []
+        proof_compare = []
+        proof_node = []
+        for vertex, val in var_proof_dict.items():
+            proof_mask.append(self.topo_dict[vertex])
+            node = self.get_vertex_node(vertex)
+            proof_node.append(node)
+            proof_compare.append(node.val_dict[val])
+
+        infer_mask = []
+        infer_compare = []
+        for vertex, val in var_infer_dict.items():
+            infer_mask.append(self.topo_dict[vertex])
+            node = self.get_vertex_node(vertex)
+            infer_compare.append(node.val_dict[val])
+
+        proof = np.where((self.sample_arr[:, proof_mask] == proof_compare).all(axis=1))
+        infer = np.where((self.sample_arr[proof[0][:, None], infer_mask] == infer_compare).all(axis=1))
+
+        likelihood_val = np.ones(proof[0].shape[0])
+
+        for node in proof_node:
+            var_lookup = [self.topo_dict[v] for v in node.parent_lst]
+            var_lookup.append(self.topo_dict[node.vertex])
+            distribution_idx = self.sample_arr[proof[0][:, None], var_lookup]
+
+            # Can this loop be vectorized?
+            for i in range(likelihood_val.shape[0]):
+                likelihood_val[i] *= node.distribution[tuple(distribution_idx[i])]
+
+        return np.sum(likelihood_val[infer[0]]) / np.sum(likelihood_val)
 
     def sample(self, sample_num):
         np.random.seed(0)

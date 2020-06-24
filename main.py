@@ -53,7 +53,8 @@ def main():
             graph_in.infer(i.infer_dict, i.proof_dict)
 
     start_time = time.time()
-    print(graph_in.infer_forward({'I': 'Thap'}, {'D': 'De', 'G': 'B', 'L': 'Yeu', 'S': 'Thap'}))
+    # print(graph_in.infer_forward({'I': 'Thap'}, {'D': 'De', 'G': 'B', 'L': 'Yeu', 'S': 'Thap'}))
+    print(graph_in.infer_likelihood({'G': 'A'}, {'L': 'Manh', 'S': 'Thap'}))
     print("Time: ", time.time() - start_time)
 
 
