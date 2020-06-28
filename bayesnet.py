@@ -1,5 +1,6 @@
 import numpy as np
 from digraph import *
+import random
 
 
 class BayesNetException(BaseException):
@@ -21,7 +22,8 @@ class BayesNode(VertexNode):
 class BayesNet(DiGraph):
     def __init__(self):
         super().__init__()
-        self.sample_arr = np.array([0])
+        self.forward_samples = np.array([0])
+        self.likelihood_samples = np.array([0])
         self.topo_dict = {}  # Updated in sample()
 
     def add(self, vertex, parent_lst, val_dict, val_table):
@@ -42,7 +44,7 @@ class BayesNet(DiGraph):
         # var_proof_dict = {"I": "Cao", "D": "Kho"}
         self.check(var_infer_dict)
         self.check(var_proof_dict)
-        self.sample(sample_num)
+        self.sample_forward(sample_num)
 
         proof_mask = []
         proof_compare = []
@@ -59,12 +61,12 @@ class BayesNet(DiGraph):
             infer_compare.append(node.val_dict[val])
 
         if proof_mask:
-            proof = np.where((self.sample_arr[:, proof_mask] == proof_compare).all(axis=1))
-            infer = np.where((self.sample_arr[proof[0][:, None], infer_mask] == infer_compare).all(axis=1))
+            proof = np.where((self.forward_samples[:, proof_mask] == proof_compare).all(axis=1))
+            infer = np.where((self.forward_samples[proof[0][:, None], infer_mask] == infer_compare).all(axis=1))
             return infer[0].shape[0] / proof[0].shape[0]
         else:
-            infer = np.where((self.sample_arr[:, infer_mask] == infer_compare).all(axis=1))
-            return infer[0].shape[0] / self.sample_arr.shape[0]
+            infer = np.where((self.forward_samples[:, infer_mask] == infer_compare).all(axis=1))
+            return infer[0].shape[0] / self.forward_samples.shape[0]
 
     def infer_likelihood(self, var_infer_dict, var_proof_dict, sample_num=10 ** 6):
         if not var_proof_dict:
@@ -73,7 +75,7 @@ class BayesNet(DiGraph):
 
         self.check(var_infer_dict)
         self.check(var_proof_dict)
-        self.sample(sample_num)
+        self.sample_likelihood(sample_num, var_proof_dict)
 
         proof_mask = []
         proof_compare = []
@@ -91,8 +93,8 @@ class BayesNet(DiGraph):
             node = self.get_vertex_node(vertex)
             infer_compare.append(node.val_dict[val])
 
-        proof_loc = np.where((self.sample_arr[:, proof_mask] == proof_compare).all(axis=1))
-        proof_arr = self.sample_arr[proof_loc[0], :]
+        proof_loc = np.where((self.likelihood_samples[:, proof_mask] == proof_compare).all(axis=1))
+        proof_arr = self.likelihood_samples[proof_loc[0], :]
         infer_loc = np.where((proof_arr[:, infer_mask] == infer_compare).all(axis=1))
 
         likelihood_val = np.ones(proof_loc[0].shape[0])
@@ -109,11 +111,11 @@ class BayesNet(DiGraph):
 
         return np.sum(likelihood_val[infer_loc[0]]) / np.sum(likelihood_val)
 
-    def sample(self, sample_num):
-        if self.sample_arr.shape[0] == sample_num:
+    def sample_forward(self, sample_num):
+        if self.forward_samples.shape[0] == sample_num:
             return
 
-        np.random.seed(0)
+        random.seed(0)
         sample_lst = []
         sorter = TopoSorter(self)
         topo_lst = sorter.sort()
@@ -125,7 +127,25 @@ class BayesNet(DiGraph):
                 sample_val.append(self.roll(vertex, sample_val))
             sample_lst.extend(sample_val)
 
-        self.sample_arr = np.array(sample_lst).reshape(sample_num, -1)
+        self.forward_samples = np.array(sample_lst).reshape(sample_num, -1)
+
+    def sample_likelihood(self, sample_num, proof):
+        random.seed(0)
+        sample_lst = []
+        sorter = TopoSorter(self)
+        topo_lst = sorter.sort()
+        self.topo_dict = {vertex: vertex_idx for vertex_idx, vertex in enumerate(topo_lst)}
+
+        for i in range(sample_num):
+            sample_val = []
+            for vertex in topo_lst:
+                if vertex in proof:
+                    sample_val.append(self.get_vertex_node(vertex).val_dict[proof[vertex]])
+                else:
+                    sample_val.append(self.roll(vertex, sample_val))
+            sample_lst.extend(sample_val)
+
+        self.likelihood_samples = np.array(sample_lst).reshape(sample_num, -1)
 
     def roll(self, vertex, prev_vertex_val):
         node = self.get_vertex_node(vertex)
@@ -137,8 +157,7 @@ class BayesNet(DiGraph):
         else:
             p_val = node.distribution
 
-        # return np.random.choice(p_val.shape[0], p=p_val) # slow???
-        rand_val = np.random.uniform()
+        rand_val = random.uniform(0, 1)
         for idx in range(p_val.shape[0]):
             rand_val -= p_val[idx]
             if rand_val < 0:

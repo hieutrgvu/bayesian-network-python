@@ -44,6 +44,8 @@ def read_command():
 
 
 def main():
+    start_time = time.time()
+
     #input_model = read_command()
     input_model = ['model.txt', 'test.txt']
     if len(input_model) >= 2:
@@ -52,7 +54,7 @@ def main():
             print(i.vertex, " parent_list = ", i.parent_lst, " value_list = ", i.val_dict, " table = ", i.distribution)
 
         infer_in = parse_infer(input_model[1])
-        method = "forward"
+        method = "likelihood"
         if len(input_model) == 3 and input_model[2] != "":
             method = input_model[2]
 
@@ -69,9 +71,6 @@ def main():
 
         output_file.close()
 
-    start_time = time.time()
-    # print(graph_in.infer_forward({'I': 'Thap'}, {'D': 'De', 'G': 'B', 'L': 'Yeu', 'S': 'Thap'}))
-    # print(graph_in.infer_likelihood({'G': 'A'}, {'L': 'Manh', 'S': 'Thap'}))
     print("Time: ", time.time() - start_time)
 
 
