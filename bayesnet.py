@@ -119,8 +119,8 @@ class BayesNet(DiGraph):
         return self.forward_samples
 
     def sample_likelihood(self, sample_num, proof):
-        if frozenset(proof) in self.likelihood_samples:
-            return self.likelihood_samples[frozenset(proof)]
+        if frozenset(proof.items()) in self.likelihood_samples:
+            return self.likelihood_samples[frozenset(proof.items())]
 
         sample_lst = []
         sorter = TopoSorter(self)
@@ -136,8 +136,8 @@ class BayesNet(DiGraph):
                     sample_val.append(self.roll(vertex, sample_val))
             sample_lst.extend(sample_val)
 
-        self.likelihood_samples[frozenset(proof)] = np.array(sample_lst).reshape(sample_num, -1)
-        return self.likelihood_samples[frozenset(proof)]
+        self.likelihood_samples[frozenset(proof.items())] = np.array(sample_lst).reshape(sample_num, -1)
+        return self.likelihood_samples[frozenset(proof.items())]
 
     def roll(self, vertex, prev_vertex_val):
         node = self.get_vertex_node(vertex)
