@@ -46,8 +46,7 @@ def read_command():
 def main():
     start_time = time.time()
 
-    #input_model = read_command()
-    input_model = ['model.txt', 'test.txt']
+    input_model = read_command()
     if len(input_model) >= 2:
         graph_in = parse_graph(input_model[0])
         for i in graph_in.node_dict.values():
