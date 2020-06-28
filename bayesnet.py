@@ -77,15 +77,6 @@ class BayesNet(DiGraph):
         self.check(var_proof_dict)
         self.sample_likelihood(sample_num, var_proof_dict)
 
-        proof_mask = []
-        proof_compare = []
-        proof_node = []
-        for vertex, val in var_proof_dict.items():
-            proof_mask.append(self.topo_dict[vertex])
-            node = self.get_vertex_node(vertex)
-            proof_node.append(node)
-            proof_compare.append(node.val_dict[val])
-
         infer_mask = []
         infer_compare = []
         for vertex, val in var_infer_dict.items():
@@ -93,16 +84,14 @@ class BayesNet(DiGraph):
             node = self.get_vertex_node(vertex)
             infer_compare.append(node.val_dict[val])
 
-        proof_loc = np.where((self.likelihood_samples[:, proof_mask] == proof_compare).all(axis=1))
-        proof_arr = self.likelihood_samples[proof_loc[0], :]
-        infer_loc = np.where((proof_arr[:, infer_mask] == infer_compare).all(axis=1))
+        infer_loc = np.where((self.likelihood_samples[:, infer_mask] == infer_compare).all(axis=1))
+        likelihood_val = np.ones(self.likelihood_samples.shape[0])
 
-        likelihood_val = np.ones(proof_loc[0].shape[0])
-
-        for node in proof_node:
+        for vertex in var_proof_dict.keys():
+            node = self.get_vertex_node(vertex)
             var_lookup = [self.topo_dict[v] for v in node.parent_lst]
             var_lookup.append(self.topo_dict[node.vertex])
-            var_samples = proof_arr[:, var_lookup]
+            var_samples = self.likelihood_samples[:, var_lookup]
             var_unique = np.unique(var_samples, axis=0)
 
             for sample in var_unique:
