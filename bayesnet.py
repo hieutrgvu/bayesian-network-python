@@ -104,7 +104,6 @@ class BayesNet(DiGraph):
         if self.forward_samples.shape[0] == sample_num:
             return self.forward_samples
 
-        random.seed(0)
         sample_lst = []
         sorter = TopoSorter(self)
         topo_lst = sorter.sort()
@@ -123,7 +122,6 @@ class BayesNet(DiGraph):
         if frozenset(proof) in self.likelihood_samples:
             return self.likelihood_samples[frozenset(proof)]
 
-        random.seed(0)
         sample_lst = []
         sorter = TopoSorter(self)
         topo_lst = sorter.sort()
