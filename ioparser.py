@@ -133,9 +133,11 @@ def parse_file_test(test_file):
         if len(data_split) == 0:
             raise ErrorFormatFile("test file not enough argument")
 
+        infer_dict = {}
         if len(data_split[0]) > 0:
             infer_dict = infer_dict_parser(data_split[0])
 
+        proof_dict = {}
         if len(data_split[1]) > 0:
             proof_dict = infer_dict_parser(data_split[1])
 
@@ -153,6 +155,7 @@ def infer_dict_parser(infer_original):
         if len(infer) == 2:
             infer_dict[infer[0]] = infer[1].rstrip()
         else:
-            raise ErrorFormatFile("test file error format")
+            if infer[0] != '\n':
+                raise ErrorFormatFile("test file error format")
 
     return infer_dict
