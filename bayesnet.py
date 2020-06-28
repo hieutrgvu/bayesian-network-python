@@ -23,7 +23,7 @@ class BayesNet(DiGraph):
     def __init__(self):
         super().__init__()
         self.forward_samples = np.array([0])
-        self.likelihood_samples = np.array([0])
+        self.likelihood_samples = {}  # For caching. Dictionary's keys is the proof.
         self.topo_dict = {}  # Updated in sample()
 
     def add(self, vertex, parent_lst, val_dict, val_table):
@@ -44,7 +44,7 @@ class BayesNet(DiGraph):
         # var_proof_dict = {"I": "Cao", "D": "Kho"}
         self.check(var_infer_dict)
         self.check(var_proof_dict)
-        self.sample_forward(sample_num)
+        samples = self.sample_forward(sample_num)
 
         proof_mask = []
         proof_compare = []
@@ -61,12 +61,12 @@ class BayesNet(DiGraph):
             infer_compare.append(node.val_dict[val])
 
         if proof_mask:
-            proof = np.where((self.forward_samples[:, proof_mask] == proof_compare).all(axis=1))
-            infer = np.where((self.forward_samples[proof[0][:, None], infer_mask] == infer_compare).all(axis=1))
-            return infer[0].shape[0] / proof[0].shape[0]
+            proof_loc = np.where((samples[:, proof_mask] == proof_compare).all(axis=1))
+            infer = np.where((samples[proof_loc[0][:, None], infer_mask] == infer_compare).all(axis=1))
+            return infer[0].shape[0] / proof_loc[0].shape[0]
         else:
-            infer = np.where((self.forward_samples[:, infer_mask] == infer_compare).all(axis=1))
-            return infer[0].shape[0] / self.forward_samples.shape[0]
+            infer = np.where((samples[:, infer_mask] == infer_compare).all(axis=1))
+            return infer[0].shape[0] / samples.shape[0]
 
     def infer_likelihood(self, var_infer_dict, var_proof_dict, sample_num=10 ** 6):
         if not var_proof_dict:
@@ -75,7 +75,7 @@ class BayesNet(DiGraph):
 
         self.check(var_infer_dict)
         self.check(var_proof_dict)
-        self.sample_likelihood(sample_num, var_proof_dict)
+        samples = self.sample_likelihood(sample_num, var_proof_dict)
 
         infer_mask = []
         infer_compare = []
@@ -84,14 +84,14 @@ class BayesNet(DiGraph):
             node = self.get_vertex_node(vertex)
             infer_compare.append(node.val_dict[val])
 
-        infer_loc = np.where((self.likelihood_samples[:, infer_mask] == infer_compare).all(axis=1))
-        likelihood_val = np.ones(self.likelihood_samples.shape[0])
+        infer_loc = np.where((samples[:, infer_mask] == infer_compare).all(axis=1))
+        likelihood_val = np.ones(samples.shape[0])
 
         for vertex in var_proof_dict.keys():
             node = self.get_vertex_node(vertex)
             var_lookup = [self.topo_dict[v] for v in node.parent_lst]
             var_lookup.append(self.topo_dict[node.vertex])
-            var_samples = self.likelihood_samples[:, var_lookup]
+            var_samples = samples[:, var_lookup]
             var_unique = np.unique(var_samples, axis=0)
 
             for sample in var_unique:
@@ -102,7 +102,7 @@ class BayesNet(DiGraph):
 
     def sample_forward(self, sample_num):
         if self.forward_samples.shape[0] == sample_num:
-            return
+            return self.forward_samples
 
         random.seed(0)
         sample_lst = []
@@ -117,8 +117,12 @@ class BayesNet(DiGraph):
             sample_lst.extend(sample_val)
 
         self.forward_samples = np.array(sample_lst).reshape(sample_num, -1)
+        return self.forward_samples
 
     def sample_likelihood(self, sample_num, proof):
+        if frozenset(proof) in self.likelihood_samples:
+            return self.likelihood_samples[frozenset(proof)]
+
         random.seed(0)
         sample_lst = []
         sorter = TopoSorter(self)
@@ -134,7 +138,8 @@ class BayesNet(DiGraph):
                     sample_val.append(self.roll(vertex, sample_val))
             sample_lst.extend(sample_val)
 
-        self.likelihood_samples = np.array(sample_lst).reshape(sample_num, -1)
+        self.likelihood_samples[frozenset(proof)] = np.array(sample_lst).reshape(sample_num, -1)
+        return self.likelihood_samples[frozenset(proof)]
 
     def roll(self, vertex, prev_vertex_val):
         node = self.get_vertex_node(vertex)
