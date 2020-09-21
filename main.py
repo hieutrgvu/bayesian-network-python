@@ -49,6 +49,7 @@ def main():
     input_model = read_command()
     if len(input_model) >= 2:
         graph_in = parse_graph(input_model[0])
+        print("\n******* Network Info:")
         for i in graph_in.node_dict.values():
             print(i.vertex, " parent_list = ", i.parent_lst, " value_list = ", i.val_dict, " table = ", i.distribution)
 
@@ -56,11 +57,12 @@ def main():
         method = "likelihood"
         if len(input_model) == 3 and input_model[2] != "":
             method = input_model[2]
+        print("\n******* Method = ", method)
 
         output_file = open('output.txt', 'w')
         for i in infer_in.infer_list:
             output_value = ""
-            print("method = ", method)
+            print("\n******* Query Info:")
             print("infer_dict = ", i.infer_dict, " proof_dict = ", i.proof_dict)
             if "forward" in method:
                 output_value = graph_in.infer_forward(i.infer_dict, i.proof_dict)
@@ -70,7 +72,7 @@ def main():
 
         output_file.close()
 
-    print("Time: ", time.time() - start_time)
+    print("\n******* Done! Time: ", time.time() - start_time, "seconds.")
 
 
 if __name__ == "__main__":
